@@ -27,6 +27,9 @@ pict_url   = "http://imgs.xkcd.com/comics/now/"
 
 
 def checkPicture(pict_dir, h, m):
+  # Check if file exists in cache directory, fetching it if it does not exist
+  # returint absolute path
+
   # Generate two digit Strings for quater hour and minute
   q   = m  - (m % 15)
   H   = "%02i" % h
@@ -60,34 +63,55 @@ def checkPicture(pict_dir, h, m):
 
 
 def checkAll(pict_dir):
+  # Run through all possible times and 'check' each. Will only fetch missing
+  # pictures
   for h in range(24):
     for m in range(0, 60, 15):
       checkPicture(pict_dir, h, m)
 
 
-if __name__ == '__main__':
-  argParser = argparse.ArgumentParser(description="xkcd-now.py")
-  argParser.add_argument('--all', '-a',
-    action='store_true',
-    help="Download all pictures that are missing. (Takes a bit longer)")
-  args = vars(argParser.parse_args())
-
-  # Get current time, add 7 minutes and round to quater hour
-  now = datetime.utcnow()
-  delta = timedelta(0,0,0,0,7,12)
-  now += delta
-  h   = now.hour
-  m   = now.minute
-
-  if args['all']:
-    checkAll(pict_dir)
-
-  picture = checkPicture(pict_dir, h, m)
+def displayPicture(path):
+  # Display the picture in 'path' using the configured viewer
 
   # Generate and execute command to display picture
   cmd = viewer + " "
   if viewer_opt:
     cmd += viewer_opt + " "
   cmd += picture
+
   # print picture
   system(cmd)
+
+
+def getAdjustedTime():
+  # Get current GMT time, add 7 minutes and 12h and round to quater hour
+  #  7 minutes for rounding to the nearest quater hour
+  # 12 hours due to the offset of the image names relative to GMT
+  now = datetime.utcnow()
+  delta = timedelta(0,0,0,0,7,12)
+  now += delta
+  return (now.hour, now.minute)
+
+
+
+if __name__ == '__main__':
+  # Parse arguments
+  argParser = argparse.ArgumentParser(description="xkcd-now.py")
+  argParser.add_argument('--all', '-a',
+    action='store_true',
+    help="Download all pictures that are missing. (Takes a bit longer)")
+  args = vars(argParser.parse_args())
+
+  if args['all']:
+    checkAll(pict_dir)
+
+  # Get adjusted time
+  (h, m) = getAdjustedTime()
+
+  # Get path of picture file
+  picture = checkPicture(pict_dir, h, m)
+
+  # Display picture
+  displayPicture(picture)
+
+
