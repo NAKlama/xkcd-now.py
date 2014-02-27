@@ -12,15 +12,22 @@
 
 from sys import exit
 from datetime import datetime, timedelta
-from os import system
-from time import sleep
+from os import system, mkdir
 import os.path as path
 import argparse
-import urllib3
+
+useurllib3 = False
+
+try:
+  import urllib3
+  useurllib3 = True
+except:
+  pass
 
 pict_dir   = "/home/fklama/xkcd/now"      # Change this to an existing directory
 viewer     = "/usr/bin/qiv"               # Path to image viewer binary (only qiv tested)
 viewer_opt = ""                           # Optional options to image viewer (not tested)
+wget_bin   = "/usr/bin/wget"              # Only needed when urllib3 is not installed
 
 # URL to images for XKCD Comic 1335
 pict_url   = "http://imgs.xkcd.com/comics/now/"
@@ -35,9 +42,15 @@ def checkPicture(pict_dir, h, m):
   H   = "%02i" % h
   M   = "%02i" % q
 
+  # Use ~/.xkcd-now by default
+  if not pict_dir:
+    pict_dir = path.abspath("~/.xkcd-now")
+    if not path.exists(pict_dir):
+      mkdir(pict_dir)
+
   # Check if caching directory exists
   if not path.isdir(pict_dir):
-    print "Please adjust the 'pict_dir' variable in the script to match your setup."
+    print("Please adjust the 'pict_dir' variable in the script to match your setup.")
     exit()
 
   # Generate path to picture
@@ -45,19 +58,22 @@ def checkPicture(pict_dir, h, m):
   picture   = path.join(pict_dir, pict_file)
 
   # Check if local picture exists. Download if not.
-  if not path.isfile(picture):
+  url  = pict_url + pict_file
+  if not path.isfile(picture) and useurllib3:
     http = urllib3.PoolManager()
-    url  = pict_url + pict_file
     r    = http.request('GET', url)
     if r.status == 200:
       of = open(picture, "wb")
       of.write(r.data)
       of.close()
     elif r.status == 404:
-      print "404: ", url
+      print("404: ", url)
     else:
-      print "Error downloading picture: Status =", r.status
+      print("Error downloading picture: Status =", r.status)
       exit()
+  elif not path.isfile(picture):
+    cmd = wget_bin + " -O " + pict_dir + " " + url
+    system(cmd)
 
   return picture
 
@@ -93,7 +109,6 @@ def getAdjustedTime():
   return (now.hour, now.minute)
 
 
-
 if __name__ == '__main__':
   # Parse arguments
   argParser = argparse.ArgumentParser(description="xkcd-now.py")
@@ -113,5 +128,3 @@ if __name__ == '__main__':
 
   # Display picture
   displayPicture(picture)
-
-
