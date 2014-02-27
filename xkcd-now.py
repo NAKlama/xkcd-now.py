@@ -1,7 +1,7 @@
 #!/usr/bin/python
 #
-# Name:   xkcd-now.py
-# Author: Frederik Klama
+# Name:     xkcd-now.py
+# Author:   Frederik Klama
 # License:  GPL v3 (see included LICENSE file)
 #
 # This work was inspired by XKCD Comic 1335
@@ -24,10 +24,10 @@ try:
 except:
   pass
 
-pict_dir   = "/home/fklama/xkcd/now"      # Change this to an existing directory
-viewer     = "/usr/bin/qiv"               # Path to image viewer binary (only qiv tested)
-viewer_opt = ""                           # Optional options to image viewer (not tested)
-wget_bin   = "/usr/bin/wget"              # Only needed when urllib3 is not installed
+pict_dir   = ""                 # Change this to an existing directory to override default
+viewer     = "/usr/bin/qiv"     # Path to image viewer binary (only qiv tested)
+viewer_opt = ""                 # Optional options to image viewer (not tested)
+wget_bin   = "/usr/bin/wget"    # Only needed when urllib3 is not installed
 
 # URL to images for XKCD Comic 1335
 pict_url   = "http://imgs.xkcd.com/comics/now/"
@@ -44,7 +44,7 @@ def checkPicture(pict_dir, h, m):
 
   # Use ~/.xkcd-now by default
   if not pict_dir:
-    pict_dir = path.abspath("~/.xkcd-now")
+    pict_dir = path.expanduser("~/.xkcd-now")
     if not path.exists(pict_dir):
       mkdir(pict_dir)
 
@@ -116,6 +116,9 @@ if __name__ == '__main__':
     action='store_true',
     help="Download all pictures that are missing. (Takes a bit longer)")
   args = vars(argParser.parse_args())
+
+  if pict_dir:
+    pict_dir = path.abspath(path.expanduser(pict_dir))
 
   if args['all']:
     checkAll(pict_dir)
