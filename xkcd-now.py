@@ -72,7 +72,7 @@ def checkPicture(pict_dir, h, m):
       print("Error downloading picture: Status =", r.status)
       exit()
   elif not path.isfile(picture):
-    cmd = wget_bin + " -O " + pict_dir + " " + url
+    cmd = wget_bin + " -O " + pict_dir + "/" + pict_file + " " + url
     system(cmd)
 
   return picture
