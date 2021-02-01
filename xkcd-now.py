@@ -1,7 +1,7 @@
 #!/usr/bin/python
 #
 # Name:     xkcd-now.py
-# Author:   Frederik Klama
+# Author:   Nina Alexandra Klama
 # License:  GPL v3 (see included LICENSE file)
 #
 # This work was inspired by XKCD Comic 1335
